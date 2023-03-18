@@ -7,6 +7,9 @@ import {
 import { BigNumber, Signer, Wallet } from "ethers";
 import { arrayify, keccak256 } from "ethers/lib/utils";
 import { ethers } from "hardhat";
+import { SocialRecovery, SocialRecovery__factory } from "../../typechain-types";
+import { WalletFactory } from "../../typechain-types/contracts/WalletFactory";
+import { WalletFactory__factory } from "../../typechain-types/factories/contracts/WalletFactory.sol";
 
 export async function createAccount(
   ethersSigner: Signer,
@@ -45,4 +48,28 @@ export function createAccountOwner(): Wallet {
 export async function getBalance(address: string): Promise<number> {
   const balance = await ethers.provider.getBalance(address);
   return parseInt(balance.toString());
+}
+
+export async function createSocialRecoveryAccount(
+  ethersSigner: Signer,
+  accountOwner: string,
+  entryPoint: string,
+  _factory?: WalletFactory
+): Promise<{
+  proxy: SimpleAccount;
+  accountFactory: WalletFactory;
+  implementation: string;
+}> {
+  const accountFactory =
+    _factory ??
+    (await new WalletFactory__factory(ethersSigner).deploy(entryPoint));
+  const implementation = await accountFactory.srAccountImplementation();
+  await accountFactory.createAccount(accountOwner, 0);
+  const accountAddress = await accountFactory.getAddress(accountOwner, 0);
+  const proxy = SimpleAccount__factory.connect(accountAddress, ethersSigner);
+  return {
+    implementation,
+    accountFactory,
+    proxy,
+  };
 }

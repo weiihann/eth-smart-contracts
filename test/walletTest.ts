@@ -64,11 +64,7 @@ describe("4337 Wallet", function () {
   });
 
   it("other account should not be able to call transfer", async () => {
-    const {
-      walletOwner,
-      entryPoint,
-      account2,
-    } = await fixture();
+    const { walletOwner, entryPoint, account2 } = await fixture();
 
     const { proxy: account } = await createAccount(
       ethers.provider.getSigner(),
