@@ -59,11 +59,13 @@ export async function createSocialRecoveryAccount(
   proxy: SimpleAccount;
   accountFactory: WalletFactory;
   implementation: string;
+  walletAddressBeforeCreate: string
 }> {
   const accountFactory =
     _factory ??
     (await new WalletFactory__factory(ethersSigner).deploy(entryPoint));
   const implementation = await accountFactory.srAccountImplementation();
+  const walletAddressBeforeCreate = await accountFactory.getAddress(accountOwner, 0);
   await accountFactory.createAccount(accountOwner, 0);
   const accountAddress = await accountFactory.getAddress(accountOwner, 0);
   const proxy = SimpleAccount__factory.connect(accountAddress, ethersSigner);
@@ -71,5 +73,6 @@ export async function createSocialRecoveryAccount(
     implementation,
     accountFactory,
     proxy,
+    walletAddressBeforeCreate
   };
 }

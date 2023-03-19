@@ -202,6 +202,7 @@ describe("Social Recovery 4337 Wallet", function () {
   describe("#validateUserOp", () => {
     const actualGasPrice = 1e9;
     let account: SocialRecovery | SimpleAccount;
+    let walletAddressBeforeCreate: string;
     let userOp: UserOperation;
     let userOpHash: string;
     let preBalance: number;
@@ -213,11 +214,15 @@ describe("Social Recovery 4337 Wallet", function () {
       const entryPoint = accounts[2];
       const accountOwner: any = createAccountOwner();
       const [signer] = await ethers.getSigners();
-      ({ proxy: account } = await createSocialRecoveryAccount(
+      ({ proxy: account, walletAddressBeforeCreate } = await createSocialRecoveryAccount(
         await ethers.getSigner(entryPoint),
         accountOwner.address,
         entryPoint
       ));
+
+      // getAddress should return same address
+      await expect(walletAddressBeforeCreate).to.be.equal(account.address)
+
       await signer.sendTransaction({
         from: accounts[0],
         to: account.address,
