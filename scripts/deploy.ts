@@ -1,17 +1,19 @@
 import { ethers } from "hardhat";
+import { createSocialRecoveryAccount } from "../test/helpers";
 
 async function main() {
+  const [signer] = await ethers.getSigners();
+  const entryPointAddr = "0x0576a174D229E3cFA37253523E645A78A0C91B57"
 
-  const [signer, signer1] = await ethers.getSigners();
+  const { proxy: account, accountFactory } = await createSocialRecoveryAccount(
+    signer,
+    signer.address,
+    entryPointAddr
+  );
 
-  const SocialRecovery = await ethers.getContractFactory("SocialRecovery");
-  const socialRecovery = await SocialRecovery.deploy(signer.address, signer1.address);
-
-  await socialRecovery.deployed();
-
-  console.log(
-      `Social Recovery Addr = ${socialRecovery.address}`
-    );
+  console.log("Social Recovery Addr", account.address)
+  console.log("EntryPoint Addr", entryPointAddr)
+  console.log("Factory Addr", accountFactory.address)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
