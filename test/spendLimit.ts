@@ -175,4 +175,95 @@ describe("SpendLimit 4337 Wallet", function () {
       account.execute(addr1.address, parseEther("0.1"), "0x")
     ).to.be.revertedWith("Exceed daily limit");
   });
+
+  describe("#validateUserOp of SpendLimit 4337", () => {
+    const actualGasPrice = 1e9;
+    let account: SocialRecovery | SimpleAccount;
+    let walletAddressBeforeCreate: string;
+    let userOp: UserOperation;
+    let userOpHash: string;
+    let preBalance: number;
+    let expectedPay: number;
+
+    before(async () => {
+      // that's the account of ethersSigner
+      const accounts = await ethers.provider.listAccounts();
+      const entryPoint = accounts[2];
+      const accountOwner: any = createAccountOwner();
+      const [signer] = await ethers.getSigners();
+      ({ proxy: account, walletAddressBeforeCreate } =
+        await createSpendLimitAccount(
+          await ethers.getSigner(entryPoint),
+          accountOwner.address,
+          entryPoint
+        ));
+
+      // getAddress should return same address
+      await expect(walletAddressBeforeCreate).to.be.equal(account.address);
+
+      await signer.sendTransaction({
+        from: accounts[0],
+        to: account.address,
+        value: parseEther("0.2"),
+      });
+      const callGasLimit = 200000;
+      const verificationGasLimit = 100000;
+      const maxFeePerGas = 3e9;
+      const chainId = await ethers.provider
+        .getNetwork()
+        .then((net) => net.chainId);
+
+      userOp = signUserOp(
+        fillUserOpDefaults({
+          sender: account.address,
+          callGasLimit,
+          verificationGasLimit,
+          maxFeePerGas,
+        }),
+        accountOwner,
+        entryPoint,
+        chainId
+      );
+
+      userOpHash = await getUserOpHash(userOp, entryPoint, chainId);
+
+      expectedPay = actualGasPrice * (callGasLimit + verificationGasLimit);
+
+      preBalance = await getBalance(account.address);
+      const ret = await account.validateUserOp(
+        userOp,
+        userOpHash,
+        expectedPay,
+        { gasPrice: actualGasPrice }
+      );
+      await ret.wait();
+    });
+
+    it("should pay", async () => {
+      const postBalance = await getBalance(account.address);
+      expect(preBalance - postBalance).to.eql(expectedPay);
+    });
+
+    it("should increment nonce", async () => {
+      expect(await account.nonce()).to.equal(1);
+    });
+
+    it("should reject same TX on nonce error", async () => {
+      await expect(
+        account.validateUserOp(userOp, userOpHash, 0)
+      ).to.revertedWith("account: invalid nonce");
+    });
+
+    it("should return NO_SIG_VALIDATION on wrong signature", async () => {
+      const HashZero =
+        "0x0000000000000000000000000000000000000000000000000000000000000000";
+      const userOpHash = HashZero;
+      const deadline = await account.callStatic.validateUserOp(
+        { ...userOp, nonce: 1 },
+        userOpHash,
+        0
+      );
+      expect(deadline).to.eq(1);
+    });
+  });
 });

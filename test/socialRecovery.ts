@@ -207,7 +207,7 @@ describe("Social Recovery 4337 Wallet", function () {
     ).to.be.revertedWith("account: not Owner or EntryPoint");
   });
 
-  describe("#validateUserOp", () => {
+  describe("#validateUserOp of SocialRecovery 4337", () => {
     const actualGasPrice = 1e9;
     let account: SocialRecovery | SimpleAccount;
     let walletAddressBeforeCreate: string;
