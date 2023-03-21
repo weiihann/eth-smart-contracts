@@ -9,7 +9,7 @@ import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { createAccountOwner, createSocialRecoveryAccount, getBalance } from "./helpers";
-import { arrayify, keccak256, parseEther } from "ethers/lib/utils";
+import { parseEther } from "ethers/lib/utils";
 import { SocialRecovery } from "../typechain-types";
 import { UserOperation, fillUserOpDefaults, getUserOpHash, signUserOp } from "./helpers/UserOps";
 import { BigNumber } from "ethers";

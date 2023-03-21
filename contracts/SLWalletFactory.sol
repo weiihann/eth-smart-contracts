@@ -4,7 +4,7 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/utils/Create2.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import "./SocialRecovery.sol";
+import "./SpendLimitETH.sol";
 import "./Wallet.sol";
 
 /**
@@ -13,11 +13,11 @@ import "./Wallet.sol";
  * The factory's createAccount returns the target account address even if it is already installed.
  * This way, the entryPoint.getSenderAddress() can be called either before or after the account is created.
  */
-contract WalletFactory {
-    SocialRecovery public immutable srAccountImplementation;
+contract SLWalletFactory {
+    SpendLimit public immutable slAccountImplementation;
 
     constructor(IEntryPoint _entryPoint) {
-        srAccountImplementation = new SocialRecovery(
+        slAccountImplementation = new SpendLimit(
             _entryPoint,
             address(this)
         );
@@ -32,17 +32,17 @@ contract WalletFactory {
     function createAccount(
         address owner,
         uint256 salt
-    ) public returns (SocialRecovery ret) {
+    ) public returns (SpendLimit ret) {
         address addr = getAddress(owner, salt);
         uint codeSize = addr.code.length;
         if (codeSize > 0) {
-            return SocialRecovery(payable(addr));
+            return SpendLimit(payable(addr));
         }
-        ret = SocialRecovery(
+        ret = SpendLimit(
             payable(
                 new ERC1967Proxy{salt: bytes32(salt)}(
-                    address(srAccountImplementation),
-                    // initialize function is in Wallet.sol where SocialRecovery Inherits it
+                    address(slAccountImplementation),
+                    // initialize function is in Wallet.sol where SpendLimit Inherits it
                     abi.encodeCall(Wallet.initialize, (owner))
                 )
             )
@@ -63,8 +63,8 @@ contract WalletFactory {
                     abi.encodePacked(
                         type(ERC1967Proxy).creationCode,
                         abi.encode(
-                            address(srAccountImplementation),
-                            // initialize function is in Wallet.sol where SocialRecovery Inherits it
+                            address(slAccountImplementation),
+                            // initialize function is in Wallet.sol where SpendLimit Inherits it
                             abi.encodeCall(Wallet.initialize, (owner))
                         )
                     )

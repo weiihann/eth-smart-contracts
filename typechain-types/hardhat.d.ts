@@ -69,6 +69,18 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.UUPSUpgradeable__factory>;
     getContractFactory(
+      name: "ERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20__factory>;
+    getContractFactory(
+      name: "IERC20Metadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC20Metadata__factory>;
+    getContractFactory(
+      name: "IERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC20__factory>;
+    getContractFactory(
       name: "ERC165",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC165__factory>;
@@ -77,21 +89,33 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
+      name: "SLWalletFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SLWalletFactory__factory>;
+    getContractFactory(
       name: "SocialRecovery",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SocialRecovery__factory>;
     getContractFactory(
-      name: "SpendLimitLib",
+      name: "SpendLimit",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.SpendLimitLib__factory>;
+    ): Promise<Contracts.SpendLimit__factory>;
+    getContractFactory(
+      name: "SpendLimitToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SpendLimitToken__factory>;
+    getContractFactory(
+      name: "SRWalletFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SRWalletFactory__factory>;
+    getContractFactory(
+      name: "MyToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MyToken__factory>;
     getContractFactory(
       name: "Wallet",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Wallet__factory>;
-    getContractFactory(
-      name: "WalletFactory",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.WalletFactory__factory>;
 
     getContractAt(
       name: "BaseAccount",
@@ -164,6 +188,21 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.UUPSUpgradeable>;
     getContractAt(
+      name: "ERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20>;
+    getContractAt(
+      name: "IERC20Metadata",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC20Metadata>;
+    getContractAt(
+      name: "IERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC20>;
+    getContractAt(
       name: "ERC165",
       address: string,
       signer?: ethers.Signer
@@ -174,25 +213,40 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
+      name: "SLWalletFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SLWalletFactory>;
+    getContractAt(
       name: "SocialRecovery",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.SocialRecovery>;
     getContractAt(
-      name: "SpendLimitLib",
+      name: "SpendLimit",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.SpendLimitLib>;
+    ): Promise<Contracts.SpendLimit>;
+    getContractAt(
+      name: "SpendLimitToken",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SpendLimitToken>;
+    getContractAt(
+      name: "SRWalletFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SRWalletFactory>;
+    getContractAt(
+      name: "MyToken",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MyToken>;
     getContractAt(
       name: "Wallet",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Wallet>;
-    getContractAt(
-      name: "WalletFactory",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.WalletFactory>;
 
     // default types
     getContractFactory(

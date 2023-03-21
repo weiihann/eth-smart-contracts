@@ -7,9 +7,7 @@ import {
 import { BigNumber, Signer, Wallet } from "ethers";
 import { arrayify, keccak256 } from "ethers/lib/utils";
 import { ethers } from "hardhat";
-import { SocialRecovery, SocialRecovery__factory } from "../../typechain-types";
-import { WalletFactory } from "../../typechain-types/contracts/WalletFactory";
-import { WalletFactory__factory } from "../../typechain-types/factories/contracts/WalletFactory.sol";
+import { SLWalletFactory, SRWalletFactory, SRWalletFactory__factory } from "../../typechain-types";
 
 export async function createAccount(
   ethersSigner: Signer,
@@ -54,17 +52,46 @@ export async function createSocialRecoveryAccount(
   ethersSigner: Signer,
   accountOwner: string,
   entryPoint: string,
-  _factory?: WalletFactory
+  _factory?: SRWalletFactory
 ): Promise<{
   proxy: SimpleAccount;
-  accountFactory: WalletFactory;
+  accountFactory: SRWalletFactory;
   implementation: string;
   walletAddressBeforeCreate: string
 }> {
+  const srWalletFact = await ethers.getContractFactory("SRWalletFactory")
   const accountFactory =
     _factory ??
-    (await new WalletFactory__factory(ethersSigner).deploy(entryPoint));
+    (await srWalletFact.connect(ethersSigner).deploy(entryPoint));
   const implementation = await accountFactory.srAccountImplementation();
+  const walletAddressBeforeCreate = await accountFactory.getAddress(accountOwner, 0);
+  await accountFactory.createAccount(accountOwner, 0);
+  const accountAddress = await accountFactory.getAddress(accountOwner, 0);
+  const proxy = SimpleAccount__factory.connect(accountAddress, ethersSigner);
+  return {
+    implementation,
+    accountFactory,
+    proxy,
+    walletAddressBeforeCreate
+  };
+}
+
+export async function createSpendLimitAccount(
+  ethersSigner: Signer,
+  accountOwner: string,
+  entryPoint: string,
+  _factory?: SLWalletFactory
+): Promise<{
+  proxy: SimpleAccount;
+  accountFactory: SLWalletFactory;
+  implementation: string;
+  walletAddressBeforeCreate: string
+}> {
+  const slWalletFact = await ethers.getContractFactory("SLWalletFactory")
+  const accountFactory =
+    _factory ??
+    (await slWalletFact.connect(ethersSigner).deploy(entryPoint));
+  const implementation = await accountFactory.slAccountImplementation();
   const walletAddressBeforeCreate = await accountFactory.getAddress(accountOwner, 0);
   await accountFactory.createAccount(accountOwner, 0);
   const accountAddress = await accountFactory.getAddress(accountOwner, 0);
