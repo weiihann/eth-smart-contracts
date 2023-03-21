@@ -8,10 +8,19 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { createAccountOwner, createSocialRecoveryAccount, getBalance } from "./helpers";
+import {
+  createAccountOwner,
+  createSocialRecoveryAccount,
+  getBalance,
+} from "./helpers";
 import { parseEther } from "ethers/lib/utils";
 import { SocialRecovery } from "../typechain-types";
-import { UserOperation, fillUserOpDefaults, getUserOpHash, signUserOp } from "./helpers/UserOps";
+import {
+  UserOperation,
+  fillUserOpDefaults,
+  getUserOpHash,
+  signUserOp,
+} from "./helpers/UserOps";
 import { BigNumber } from "ethers";
 
 let provider: JsonRpcProvider;
@@ -154,10 +163,9 @@ describe("Social Recovery 4337 Wallet", function () {
       expect(
         await socialRecovery.isValidSignature(messageHash, signature)
       ).to.equal(
-        ethers.utils.solidityKeccak256(
-          ["string"],
-          ["isValidSignature(bytes32,bytes)"]
-        ).slice(0,10)
+        ethers.utils
+          .solidityKeccak256(["string"], ["isValidSignature(bytes32,bytes)"])
+          .slice(0, 10)
       );
     });
 
@@ -178,7 +186,7 @@ describe("Social Recovery 4337 Wallet", function () {
       owner.address,
       entryPoint.address
     );
-    await  ethers.provider.getSigner().sendTransaction({
+    await ethers.provider.getSigner().sendTransaction({
       from: owner.address,
       to: account.address,
       value: parseEther("2"),
@@ -214,14 +222,15 @@ describe("Social Recovery 4337 Wallet", function () {
       const entryPoint = accounts[2];
       const accountOwner: any = createAccountOwner();
       const [signer] = await ethers.getSigners();
-      ({ proxy: account, walletAddressBeforeCreate } = await createSocialRecoveryAccount(
-        await ethers.getSigner(entryPoint),
-        accountOwner.address,
-        entryPoint
-      ));
+      ({ proxy: account, walletAddressBeforeCreate } =
+        await createSocialRecoveryAccount(
+          await ethers.getSigner(entryPoint),
+          accountOwner.address,
+          entryPoint
+        ));
 
       // getAddress should return same address
-      await expect(walletAddressBeforeCreate).to.be.equal(account.address)
+      await expect(walletAddressBeforeCreate).to.be.equal(account.address);
 
       await signer.sendTransaction({
         from: accounts[0],

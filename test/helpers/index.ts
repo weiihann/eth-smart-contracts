@@ -1,3 +1,5 @@
+import { SocialRecovery } from './../../typechain-types/contracts/SocialRecovery.sol/SocialRecovery';
+import { SpendLimit } from "./../../typechain-types/contracts/SpendLimitETH.sol/SpendLimit";
 import {
   SimpleAccount,
   SimpleAccountFactory,
@@ -7,7 +9,11 @@ import {
 import { BigNumber, Signer, Wallet } from "ethers";
 import { arrayify, keccak256 } from "ethers/lib/utils";
 import { ethers } from "hardhat";
-import { SLWalletFactory, SRWalletFactory, SRWalletFactory__factory } from "../../typechain-types";
+import {
+  SLWalletFactory,
+  SRWalletFactory,
+  SRWalletFactory__factory,
+} from "../../typechain-types";
 
 export async function createAccount(
   ethersSigner: Signer,
@@ -54,25 +60,30 @@ export async function createSocialRecoveryAccount(
   entryPoint: string,
   _factory?: SRWalletFactory
 ): Promise<{
-  proxy: SimpleAccount;
+  proxy: SocialRecovery;
   accountFactory: SRWalletFactory;
   implementation: string;
-  walletAddressBeforeCreate: string
+  walletAddressBeforeCreate: string;
 }> {
-  const srWalletFact = await ethers.getContractFactory("SRWalletFactory")
+  const srWalletFact = await ethers.getContractFactory("SRWalletFactory");
   const accountFactory =
-    _factory ??
-    (await srWalletFact.connect(ethersSigner).deploy(entryPoint));
+    _factory ?? (await srWalletFact.connect(ethersSigner).deploy(entryPoint));
   const implementation = await accountFactory.srAccountImplementation();
-  const walletAddressBeforeCreate = await accountFactory.getAddress(accountOwner, 0);
+  const walletAddressBeforeCreate = await accountFactory.getAddress(
+    accountOwner,
+    0
+  );
   await accountFactory.createAccount(accountOwner, 0);
   const accountAddress = await accountFactory.getAddress(accountOwner, 0);
-  const proxy = SimpleAccount__factory.connect(accountAddress, ethersSigner);
+  
+  const socialRecovery = await ethers.getContractFactory("SocialRecovery");
+  const proxy = socialRecovery.attach(accountAddress).connect(ethersSigner);
+  
   return {
     implementation,
     accountFactory,
     proxy,
-    walletAddressBeforeCreate
+    walletAddressBeforeCreate,
   };
 }
 
@@ -82,24 +93,28 @@ export async function createSpendLimitAccount(
   entryPoint: string,
   _factory?: SLWalletFactory
 ): Promise<{
-  proxy: SimpleAccount;
+  proxy: SpendLimit;
   accountFactory: SLWalletFactory;
   implementation: string;
-  walletAddressBeforeCreate: string
+  walletAddressBeforeCreate: string;
 }> {
-  const slWalletFact = await ethers.getContractFactory("SLWalletFactory")
+  const slWalletFact = await ethers.getContractFactory("SLWalletFactory");
   const accountFactory =
-    _factory ??
-    (await slWalletFact.connect(ethersSigner).deploy(entryPoint));
+    _factory ?? (await slWalletFact.connect(ethersSigner).deploy(entryPoint));
   const implementation = await accountFactory.slAccountImplementation();
-  const walletAddressBeforeCreate = await accountFactory.getAddress(accountOwner, 0);
+  const walletAddressBeforeCreate = await accountFactory.getAddress(
+    accountOwner,
+    0
+  );
   await accountFactory.createAccount(accountOwner, 0);
   const accountAddress = await accountFactory.getAddress(accountOwner, 0);
-  const proxy = SimpleAccount__factory.connect(accountAddress, ethersSigner);
+
+  const spendlimit = await ethers.getContractFactory("SpendLimit");
+  const proxy = await spendlimit.attach(accountAddress).connect(ethersSigner);
   return {
     implementation,
     accountFactory,
     proxy,
-    walletAddressBeforeCreate
+    walletAddressBeforeCreate,
   };
 }

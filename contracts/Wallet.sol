@@ -78,7 +78,7 @@ contract Wallet is BaseAccount, UUPSUpgradeable, Initializable {
         address dest,
         uint256 value,
         bytes calldata func
-    ) external {
+    ) external virtual {
         _requireFromEntryPointOrOwner();
         _call(dest, value, func);
     }

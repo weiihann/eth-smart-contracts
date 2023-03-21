@@ -5,6 +5,7 @@ import "./Wallet.sol";
 import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "hardhat/console.sol";
 
 // This contract is implemented as ERC4337: account abstraction without Ethereum protocol change
 // Also simple social recovery function is implemented
@@ -22,25 +23,28 @@ contract SpendLimit is ERC165, Wallet {
         bool isEnabled;
     }
 
-    // uint public ONE_DAY = 24 hours;
-    uint public ONE_DAY = 1 minutes; // set to 1 min for tutorial
     mapping(address => Limit) limits; // token => Limit
 
     /// this function enables a daily spending limit for ETH only.
     /// @param _amount non-zero limit.
     function setSpendingLimit(uint _amount) public onlyOwner {
         require(_amount != 0, "Invalid amount");
+        require(limits[address(0)].isEnabled, "Spend Limit Func haven't enabled");
 
         uint resetTime;
         uint timestamp = block.timestamp; // L1 batch timestamp
 
         if (_isValidUpdate()) {
-            resetTime = timestamp + ONE_DAY;
+            resetTime = 300 + timestamp;
         } else {
             resetTime = timestamp;
         }
 
         _updateLimit(_amount, _amount, resetTime, true);
+    }
+
+    function enableSpendLimit() public onlyOwner {
+        limits[address(0)].isEnabled = true;
     }
 
     // this function disables an active daily spending limit,
@@ -83,23 +87,31 @@ contract SpendLimit is ERC165, Wallet {
     }
 
     function _checkSpendingLimit(uint _amount) internal {
-            uint timestamp = block.timestamp; // L1 batch timestamp
-            Limit memory limit = limits[address(0)];
+        uint timestamp = block.timestamp; // L1 batch timestamp
+        Limit memory limit = limits[address(0)];
 
-            if (!limit.isEnabled) return;
+        if (!limit.isEnabled) return;
 
-            if (limit.limit != limit.available && timestamp > limit.resetTime) {
-                limit.resetTime = timestamp + ONE_DAY;
-                limit.available = limit.limit;
+        if (timestamp > limit.resetTime) {
+            limit.resetTime = 300 + timestamp;
+            limit.available = limit.limit;
+        }
 
-            } else if (limit.limit == limit.available) {
-                limit.resetTime = timestamp + ONE_DAY;
-            }
+        require(limit.available >= _amount, "Exceed daily limit");
 
-            require(limit.available >= _amount, "Exceed daily limit");
+        limit.available -= _amount;
 
-            limit.available -= _amount;
-            limits[address(0)] = limit;
+        limits[address(0)] = limit;
+    }
+
+    function execute(
+        address dest,
+        uint256 value,
+        bytes calldata func
+    ) external virtual override {
+        _requireFromEntryPointOrOwner();
+        _checkSpendingLimit(value);
+        _call(dest, value, func);
     }
 
     function getLimit() public view returns (uint) {
